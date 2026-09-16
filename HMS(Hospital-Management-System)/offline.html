@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Mode — HMS</title>
+    <style>
+        :root {
+            --primary: #1a3a5c;
+            --accent:  #00acc1;
+            --bg:      #f0f4f8;
+            --card:    #ffffff;
+            --text:    #1e2a38;
+            --muted:   #607d8b;
+            --border:  #dde3ea;
+            --warning: #f57c00;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, #254e7a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,.2);
+            padding: 48px 40px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+        }
+        .icon {
+            font-size: 3.5rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 12px;
+        }
+        p {
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 10px;
+            font-size: .95rem;
+        }
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff3e0;
+            color: var(--warning);
+            font-weight: 700;
+            font-size: .85rem;
+            padding: 8px 18px;
+            border-radius: 24px;
+            margin: 20px 0 28px;
+        }
+        .dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%,100% { opacity: 1; }
+            50%      { opacity: .35; }
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: .95rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .18s;
+            margin: 0 6px 8px;
+        }
+        .btn:hover { background: #254e7a; }
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+        }
+        .btn-outline:hover { background: #e8f0fe; }
+        .info-box {
+            background: #e8f5e9;
+            border-left: 4px solid #2e7d32;
+            border-radius: 8px;
+            padding: 14px 18px;
+            margin-top: 28px;
+            text-align: left;
+        }
+        .info-box p { color: #2e7d32; font-size: .85rem; margin: 0; }
+        .info-box strong { display: block; margin-bottom: 4px; }
+        @media (max-width: 480px) {
+            .card { padding: 32px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <span class="icon">&#128683;</span>
+    <h1>You are currently <strong>offline</strong></h1>
+    <p id="user-greeting">The System cannot reach the server right now.</p>
+    <p>Please note that currently <strong>services are limited</strong> while offline.<br>
+        Any patient registrations or appointment bookings will be 
+       <strong>updated</strong> automatically once the connection is restored.</p>
+    <div class="status">
+        <span class="dot"></span>
+        No network connection detected — limited services available
+    </div>
+
+    <a href="/HMS/pages/dashboard.php" class="btn">&#10003; Continue Working</a>
+    <button class="btn btn-outline" onclick="window.location.reload()">&#8635; Retry</button>
+
+    <div class="info-box">
+        <p>
+            <strong>&#128190; Offline mode active</strong>
+        </p>
+    </div>
+</div>
+
+<script>
+// Show cached session info if available
+(async () => {
+    try {
+        const req = indexedDB.open('hms_offline', 2);
+        req.onsuccess = (e) => {
+            const db  = e.target.result;
+            if (!db.objectStoreNames.contains('session')) return;
+            const tx  = db.transaction('session', 'readonly');
+            const get = tx.objectStore('session').get('current');
+            get.onsuccess = () => {
+                const s = get.result;
+                if (s && s.authenticated && s.full_name) {
+                    document.getElementById('user-greeting').textContent =
+                        'Welcome back, ' + s.full_name + '. You are currently offline.';
+                }
+            };
+        };
+    } catch (e) { /* silent */ }
+})();
+
+// Auto-redirect back when online
+window.addEventListener('online', () => {
+    setTimeout(() => window.history.back(), 1000);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Secrets & credentials — never commit these details
+config/config.php
+config/external_config.php
+.env
+*.env
+
+# OS & editor
+.DS_Store
+Thumbs.db
+.vscode/
+
+# XAMPP logs / temp
+*.log

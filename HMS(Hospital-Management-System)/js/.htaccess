@@ -1,0 +1,6 @@
+# Allow the Service Worker to control the full /HMS/ scope
+# even though the file lives in /HMS/js/
+<Files "service_worker.js">
+    Header set Service-Worker-Allowed "/HMS/"
+    Header set Content-Type "application/javascript"
+</Files>
